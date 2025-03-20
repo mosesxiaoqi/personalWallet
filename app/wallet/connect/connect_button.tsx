@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import blockies from "ethereum-blockies"; // 确保先安装：npm install ethereum-blockies
-import {checkWalletCreated, createWallet, getWalletaddress} from '../create/local_wallet_management';
+import {checkWalletCreated, createWallet, getWalletaddress} from '../create/create_local_wallet';
 import { CreateWalletDialog } from '../create/create_wallet_dialog'; // 根据实际路径调整
 
 export function WalletConnectButton() {

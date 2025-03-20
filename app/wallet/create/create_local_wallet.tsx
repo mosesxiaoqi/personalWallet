@@ -1,4 +1,4 @@
-import * as mnemonic from './mnemonics';
+import * as mnemonic from './create_mnemonics';
 
 // 检查是否创建了钱包
 export async function checkWalletCreated() {

@@ -1,4 +1,5 @@
 import Image from "next/image";
+
 // app/page.tsx
 
 import type { Metadata } from "next";

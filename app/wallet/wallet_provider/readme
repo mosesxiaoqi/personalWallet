@@ -1,0 +1,35 @@
+#################################################################################################
+#                            manifest.json 文件注释
+#################################################################################################
+# manifest.json 文件是一个 Chrome 扩展 的配置文件，符合 Manifest V3 规范。                              
+# 它定义了 Lai Wallet 这个钱包扩展的基本信息、权限、后台脚本、内容脚本等，                                  
+# 使得该扩展能够在浏览器中运行，并提供 EIP-1193 和 EIP-6963 兼容的钱包功能。                               
+#                                                                                               
+# Manifest V3 的重要变化：                                                                          
+# • 不再支持持久性 background.js，取而代之的是 Service Worker 方式（见 background.service_worker）。     
+# • 不能直接在 content_scripts 中使用 eval，必须通过 chrome.scripting.executeScript 方式执行动态代码。   
+# • 更安全，减少恶意扩展滥用 eval 和 webRequestBlocking。
+
+# "permissions": ["storage"]:
+# • 这里声明了扩展需要的权限，在安装时 Chrome 会向用户提示。
+# • "storage" 允许扩展使用 chrome.storage.local 来存储和读取数据（例如钱包私钥、用户设置等）。
+#
+# "background": {"service_worker": "src/background.js"}
+# background 定义了后台脚本，它的作用是：
+# • 处理 钱包核心逻辑（如交易签名、私钥管理）。
+# • 监听 扩展与 DApp 的交互（通过 chrome.runtime.onMessage）。
+# • 维护与 区块链网络的连接。
+# • service_worker: “src/background.js”`
+# • 这是 Manifest V3 的要求，不再支持 persistent 模式，所有后台逻辑必须使用 Service Worker 方式处理。
+# • Service Worker 运行时：
+# • 在需要时启动（例如收到消息时）。
+# • 执行任务后自动关闭，节省资源。
+# 
+# "content_scripts": [{"matches": ["<all_urls>"],"js": ["src/content.js"]}]
+# 这段配置表示 src/content.js 会被注入到所有网页 (<all_urls>) 中运行。
+# • 这个内容脚本通常用于：
+# • 注入 window.ethereum，让 DApp 识别该扩展为一个 EIP-1193 兼容的钱包。
+# • 拦截 DApp 发送的 JSON-RPC 请求，并将请求转发到后台处理（通过 chrome.runtime.sendMessage）。
+# • 监听 DApp 账户、链 ID 变化，并通知前端页面。
+#################################################################################################
+#################################################################################################

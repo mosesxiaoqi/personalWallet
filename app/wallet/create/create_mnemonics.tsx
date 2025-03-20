@@ -1,6 +1,6 @@
 import { mnemonicToAccount, generateMnemonic, english} from 'viem/accounts'; 
-import { createWalletClient, http, WalletClient} from 'viem'; 
-import { mainnet, Chain } from 'viem/chains';
+import { createWalletClient, createPublicClient, http, WalletClient, PublicClient, HttpTransport} from 'viem'; 
+import { mainnet, sepolia, Chain } from 'viem/chains';
 import * as fs from 'fs';
 import CryptoJS from 'crypto-js';
 
@@ -246,31 +246,67 @@ export async function generateAddress(mnemonic: string)
     return account.address;
 }
 
-let currentTransportConfig = { url: undefined }; // 默认使用http默认URL
+const transports: Record<number, string> = {
+    [mainnet.id] : ('https://rpc.payload.de'),
+    [sepolia.id]: ('https://1rpc.io/sepolia')
+}
+
+const chainMap: Record<number, Chain> = {[mainnet.id]: mainnet, [sepolia.id]: sepolia}
+let rabbitWalletClient: WalletClient | null = null;
+let rabbitPublicCClient: PublicClient | null = null;
+let currentChain: Chain = sepolia;
+let currentTransportConfig = { url: transports[currentChain.id] }; // 默认使用http默认URL
 // m/44'/60'/1'/0/0  
 // 5. （可选）创建钱包客户端，用于与区块链交互 
-let rabbitWalletClient: WalletClient = createWalletClient
-(
-    {   //由于账户可能会更换，因此在钱包的前端更换账户时，发生变化的是当前活动账户的私钥，而不是整个钱包的私钥。因此，钱包客户端应该支持动态切换私钥。
-        //在交易时要指定当前活动账户
-        chain: mainnet,   
-        transport: http(currentTransportConfig.url), 
+
+// 获取全局 WalletClient（确保单例）
+export async function getWalletClient(): Promise<WalletClient> {
+    if (!rabbitWalletClient) {
+        rabbitWalletClient = createWalletClient({
+            //由于账户可能会更换，因此在钱包的前端更换账户时，发生变化的是当前活动账户的私钥，而不是整个钱包的私钥。因此，钱包客户端应该支持动态切换私钥。
+            //在交易时要指定当前活动账户
+            chain: currentChain,
+            transport: http(currentTransportConfig.url),
+        });
     }
-); 
+    return rabbitWalletClient;
+}
+
+export async function getPublicClient(): Promise<PublicClient> {
+    if (!rabbitPublicCClient) { 
+        rabbitPublicCClient = createPublicClient({
+            chain: currentChain,
+            transport: http(currentTransportConfig.url),
+        });
+    }   
+    return rabbitPublicCClient
+}
 
 // 函数：根据需求动态切换链
-function switchChain(newChain: Chain) {
+export async function switchChain(newChain: Chain) {
+    currentTransportConfig.url = transports[newChain.id]?? null
+    if (currentTransportConfig.url === null) {
+        return false;
+    }
     rabbitWalletClient = createWalletClient({
       chain: newChain,  // 动态设置新的链
       transport: http(currentTransportConfig.url), // 保持当前 transport
     });
+
+    rabbitPublicCClient = createPublicClient({
+        chain: newChain,
+        transport: http(currentTransportConfig.url),
+    });
+
+    currentChain = newChain
+
+    return true;
 }
 
-// 函数：动态切换 transport
-function switchTransport(newTransport: any) {
-    currentTransportConfig.url = newTransport;
-    rabbitWalletClient = createWalletClient({
-      chain: rabbitWalletClient.chain,  // 保持当前链
-      transport: http(currentTransportConfig.url),    // 动态设置新的 transport
-    });
+export async function getCurrentChain() {
+    return currentChain;
+}
+
+export async function getChains() {
+    return Object.keys(transports).map(id => ({ id: Number(id), chain: chainMap[Number(id)] }));
 }
