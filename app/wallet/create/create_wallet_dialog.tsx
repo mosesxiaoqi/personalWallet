@@ -3,7 +3,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { FormEvent, useState } from 'react';
-import { saveWalletName } from './create_mnemonics';
+import { saveWalletName } from '../connect/create_mnemonics';
 import { createWallet } from './create_local_wallet';
 
 interface CreateWalletDialogProps {

@@ -1,16 +1,15 @@
 //background.js
-import { EventEmitter } from 'events';
-import { getWalletClient, getPublicClient, switchChain, getCurrentChain, getChains} from '@/app/wallet/create/create_mnemonics'
-import { getWalletaddress } from '@/app/wallet/create/create_local_wallet'
-import { PublicClient, WalletClient, BlockTag } from 'viem'
+import EventEmitter from 'eventemitter3'
+import { getWalletClient, getPublicClient, switchChain, getCurrentChain, getChains} from './create_mnemonics'
+import { getWalletaddress } from '../create/create_local_wallet'
+import { PublicClient, WalletClient, BlockTag, EIP1193Parameters, EIP1193Provider } from 'viem'
 import { Chain } from 'viem/chains';
+// import { EIP1193Parameters, EIP1193Provider, createWalletClient, fromHex, http, toHex } from 'viem'
 
 interface ChainInfo {
   id: number;
   chain: Chain;
 }
-
-export let laiProvider: EthereumProvider | undefined = undefined;
 
 interface RpcTransactionRequest {
   from?: string;
@@ -44,7 +43,7 @@ function isValidParamsArray(params: unknown): params is unknown[] {
   return Array.isArray(params);
 }
 
-class EthereumProvider extends EventEmitter {
+export class EthereumProvider extends EventEmitter {
   [key: string]: any;  // 添加字符串索引签名
   
   private laiPublicClient: PublicClient | undefined;
@@ -89,7 +88,7 @@ class EthereumProvider extends EventEmitter {
   }
 
   // 处理请求
-  async request({ method, params}: RequestArguments) {
+  async request({ method, params}: EIP1193Parameters): Promise<ReturnType<EIP1193Provider['request']>> {
     await this.initialize()
     if (!this.laiPublicClient || !this.laiWalletClient) {
       throw new Error('Clients not initialized');
@@ -185,24 +184,4 @@ class EthereumProvider extends EventEmitter {
   };
 }
 
-// 注入 window.ethereum
-export function injectEthereumProvider() {
-
-  const lai_provider = new EthereumProvider()
-  // 支持 EIP-6963
-  if (!window.ethereum) {
-    window.ethereum = lai_provider;
-    console.log('Lai Wallet 已注入作为默认提供者');
-  } else if (Array.isArray(window.ethereum.providers)) {
-    window.ethereum.providers.push(lai_provider);
-    console.log('Lai Wallet 已添加到现有提供者数组');
-  } else {
-    const existingProvider = window.ethereum;
-    window.ethereum = {
-      providers: [existingProvider, lai_provider],
-    };
-    console.log('Lai Wallet 与现有提供者共存');
-  }
-  laiProvider = lai_provider
-}
 

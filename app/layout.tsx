@@ -5,7 +5,6 @@ import { WalletConnectButton } from "./wallet/connect/connect_button";
 import { headers } from 'next/headers' // added
 import ContextProvider from '@/app/wallet/create/create_appkit' // added
 import { ConnectButton } from "@/app/wallet/connect/connect_appkit_button";
-import WalletProvider from '@/app/wallet/wallet_provider/injectHook'
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,51 +33,49 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <WalletProvider>
-          <ContextProvider cookies={cookies}>
-            <div className="min-h-screen flex">
-              {/* 侧边栏导航区域 */}
-              <aside className="w-40 bg-gray-50 p-6 border-r">
-                {/* 添加大标题或logo */}
-                <header className="mb-15 flex items-center justify-center">
-                  {/* 这里可以使用文本标题 */}
-                  <h1 className="text-5xl font-bold">来</h1>
-                </header>
-                <nav className="flex flex-col items-center space-y-5">
-                  <a
-                    href="/wallet"
-                    className="text-lg font-medium hover:text-primary transition-colors"
-                  >
-                    钱包
-                  </a>
-                  <a
-                    href="/dex"
-                    className="text-lg font-medium hover:text-primary transition-colors"
-                  >
-                    DEX
-                  </a>
-                  <a
-                    href="/quant"
-                    className="text-lg font-medium hover:text-primary transition-colors"
-                  >
-                    量化
-                  </a>
-                </nav>
-              </aside>
-              {/* 主要内容区域 */}
-              <div className="flex-1 flex flex-col">
-                {/* 页眉：显示钱包地址 */}
-                <header className="flex justify-end items-center p-4 bg-white shadow gap-x-4">
-                  <WalletConnectButton />
-                  <ConnectButton />
-                </header>
-                <main className="flex-1 p-8">
-                  {children}
-                </main>
-              </div>
+        <ContextProvider cookies={cookies}>
+          <div className="min-h-screen flex">
+            {/* 侧边栏导航区域 */}
+            <aside className="w-40 bg-gray-50 p-6 border-r">
+              {/* 添加大标题或logo */}
+              <header className="mb-15 flex items-center justify-center">
+                {/* 这里可以使用文本标题 */}
+                <h1 className="text-5xl font-bold">来</h1>
+              </header>
+              <nav className="flex flex-col items-center space-y-5">
+                <a
+                  href="/wallet"
+                  className="text-lg font-medium hover:text-primary transition-colors"
+                >
+                  钱包
+                </a>
+                <a
+                  href="/dex"
+                  className="text-lg font-medium hover:text-primary transition-colors"
+                >
+                  DEX
+                </a>
+                <a
+                  href="/quant"
+                  className="text-lg font-medium hover:text-primary transition-colors"
+                >
+                  量化
+                </a>
+              </nav>
+            </aside>
+            {/* 主要内容区域 */}
+            <div className="flex-1 flex flex-col">
+              {/* 页眉：显示钱包地址 */}
+              <header className="flex justify-end items-center p-4 bg-white shadow gap-x-4">
+                <WalletConnectButton />
+                <ConnectButton />
+              </header>
+              <main className="flex-1 p-8">
+                {children}
+              </main>
             </div>
-          </ContextProvider>
-        </WalletProvider>
+          </div>
+        </ContextProvider>
       </body>
     </html>
   );
